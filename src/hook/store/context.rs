@@ -5,7 +5,7 @@ use std::{
     ops::Deref,
     rc::Rc,
 };
-use yew::{use_effect_with_deps, use_hook, HookUpdater};
+use yew::{use_hook, use_mut_ref};
 
 #[derive(Debug)]
 pub struct StoreContext<T>
@@ -38,64 +38,34 @@ where
     where
         M: PartialEq,
     {
-        let state = use_opt_state_eq(|| callback(&self.store.state_ref()));
-        let value = state.0.borrow().clone();
-        use_effect_with_deps(
-            {
-                let store = self.store.clone();
-                move |_| {
-                    let is_active = Rc::new(RefCell::new(true));
-                    store.subscribe({
-                        let is_active = is_active.clone();
-                        move |_, new_state| {
-                            if !*is_active.borrow() {
-                                return false;
-                            }
-                            state.set(callback(&new_state));
-                            true
-                        }
-                    });
-                    move || {
-                        *is_active.borrow_mut() = false;
-                    }
-                }
-            },
-            (),
-        );
+        let state = use_mut_ref(|| Rc::new(callback(&self.store.state_ref())));
+        let value = state.borrow().clone();
+        use_store_sub(self.store.clone(), move |_, new_state| {
+            let new_value = callback(&new_state);
+            let mut current_value = state.borrow_mut();
+            if (**current_value).ne(&new_value) {
+                *current_value = Rc::new(new_value);
+                true
+            } else {
+                false
+            }
+        });
         value
     }
 
-    pub fn map_ref<'a, M: 'a>(&self, callback: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M>
+    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M>
     where
         M: PartialEq,
     {
-        let renderer = use_renderer();
-        let state = Ref::map(self.store.state_ref(), &callback);
-        use_effect_with_deps(
-            {
-                let store = self.store.clone();
-                move |_| {
-                    let is_active = Rc::new(RefCell::new(true));
-                    store.subscribe({
-                        let is_active = is_active.clone();
-                        move |old_state, new_state| {
-                            if !*is_active.borrow() {
-                                return false;
-                            }
-                            if *Ref::map(old_state, &callback) != *Ref::map(new_state, &callback) {
-                                renderer.render();
-                            }
-                            true
-                        }
-                    });
-                    move || {
-                        *is_active.borrow_mut() = false;
-                    }
-                }
-            },
-            (),
-        );
+        let state = Ref::map(self.store.state_ref(), &map);
+        self.watch(map);
         state
+    }
+
+    pub fn watch<W: PartialEq>(&self, watch: impl Fn(&Rc<T>) -> &W + 'static) {
+        use_store_sub(self.store.clone(), move |old_state, new_state| {
+            *Ref::map(old_state, &watch) != *Ref::map(new_state, &watch)
+        });
     }
 }
 
@@ -115,44 +85,27 @@ impl<T> Clone for StoreContext<T> {
     }
 }
 
-struct Renderer(Option<HookUpdater>);
-
-impl Renderer {
-    pub fn render(&self) {
-        self.0
-            .as_ref()
-            .expect("HookUpdater should be initialized")
-            .callback(|_: &mut Renderer| true);
-    }
-}
-
-fn use_renderer() -> Renderer {
+fn use_store_sub<T>(store: Rc<Store<T>>, sub: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static) {
     use_hook(
-        || Renderer(None),
-        |_: &mut Renderer, u| Renderer(Some(u)),
-        |_| {},
-    )
-}
-
-struct State<T: PartialEq + 'static>(Rc<RefCell<Rc<T>>>, Option<HookUpdater>);
-
-impl<T: PartialEq + 'static> State<T> {
-    pub fn set(&self, state: T) {
-        // Calling the HookUpdater callback is really expensive. This is why the logic is done prior it.
-        if (**self.0.borrow()).ne(&state) {
-            *self.0.borrow_mut() = Rc::new(state);
-            self.1
-                .as_ref()
-                .expect("HookUpdater should be initialized.")
-                .callback(|_: &mut State<T>| true)
-        }
-    }
-}
-
-fn use_opt_state_eq<T: PartialEq + 'static>(init: impl FnOnce() -> T) -> State<T> {
-    use_hook(
-        || State(Rc::new(RefCell::new(Rc::new(init()))), None),
-        |s: &mut State<T>, u| State(s.0.clone(), Some(u)),
-        |_| {},
-    )
+        || Rc::new(RefCell::new(false)),
+        move |s, u| {
+            if !*s.borrow() {
+                *s.borrow_mut() = true;
+                let s = s.clone();
+                store.subscribe(move |o, n| {
+                    let is_active = *s.borrow();
+                    if is_active {
+                        if sub(o, n) {
+                            u.callback(|_: &mut Rc<RefCell<bool>>| true);
+                        }
+                    }
+                    is_active
+                });
+            }
+            s.clone()
+        },
+        |s| {
+            *s.borrow_mut() = false;
+        },
+    );
 }
