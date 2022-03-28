@@ -1,1 +1,2 @@
-pub mod hook;
+mod hook;
+pub use hook::*;

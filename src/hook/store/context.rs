@@ -39,7 +39,7 @@ where
         M: PartialEq,
     {
         let state = use_opt_state_eq(|| callback(&self.store.state_ref()));
-        let value = state.0.clone();
+        let value = state.0.borrow().clone();
         use_effect_with_deps(
             {
                 let store = self.store.clone();
@@ -134,26 +134,24 @@ fn use_renderer() -> Renderer {
     )
 }
 
-struct State<T: PartialEq + 'static>(Rc<T>, Option<HookUpdater>);
+struct State<T: PartialEq + 'static>(Rc<RefCell<Rc<T>>>, Option<HookUpdater>);
 
 impl<T: PartialEq + 'static> State<T> {
     pub fn set(&self, state: T) {
-        if state.ne(&self.0) {
+        // Calling the HookUpdater callback is really expensive. This is why the logic is done prior it.
+        if (**self.0.borrow()).ne(&state) {
+            *self.0.borrow_mut() = Rc::new(state);
             self.1
                 .as_ref()
                 .expect("HookUpdater should be initialized.")
-                .callback(|s: &mut State<T>| {
-                    let should_render = state.ne(&s.0);
-                    s.0 = Rc::new(state);
-                    should_render
-                })
+                .callback(|_: &mut State<T>| true)
         }
     }
 }
 
 fn use_opt_state_eq<T: PartialEq + 'static>(init: impl FnOnce() -> T) -> State<T> {
     use_hook(
-        || State(Rc::new(init()), None),
+        || State(Rc::new(RefCell::new(Rc::new(init()))), None),
         |s: &mut State<T>, u| State(s.0.clone(), Some(u)),
         |_| {},
     )
