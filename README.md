@@ -142,3 +142,7 @@ let another = store.map_ref(|state| state.some_vector.iter().last().expect("to h
 
 ## Segregation of stores in large applications
 When and where it makes sense, try to break your monolithic stores into multiple. Doing so will improve the performance of the application as a whole.
+
+# Credits
+- [Rust](https://github.com/rust-lang/rust) - [MIT](https://github.com/rust-lang/rust/blob/master/LICENSE-MIT) & [Apache-2.0](https://github.com/rust-lang/rust/blob/master/LICENSE-APACHE)
+- [Yew](https://github.com/yewstack/yew) - [MIT](https://github.com/yewstack/yew/blob/master/LICENSE-MIT) & [Apache-2.0](https://github.com/yewstack/yew/blob/master/LICENSE-APACHE)
