@@ -1,12 +1,20 @@
 # yewv
 A lightning fast state management module for Yew built with performance and simplicity as a first priority.
 
+# Who is this for?
+If you wish to separate the visual concerns and the business logic from your components,
+this library is made for you.
+
 # Install
 ```toml
 [dependencies]
 yewv = { git = "https://github.com/yewv/yewv" }
 ```
 # Usage
+3 things need to be respected while using this library:
+1. Only works with `Yew` functional components.
+2. Store/service context must be registered in a **parent** or **root** component with `ContextProvider`.
+3. Store/service needs to be used in a **child** component with `use_store`/`use_service`.
 ## Simple app with store
 ```rust
 // main.rs
@@ -108,4 +116,29 @@ fn main() {
 ```
 
 ## map vs map_ref
-todo
+If you only wish to reference a value owned by the store, you should use `map_ref`.
+As opposed to `map`, `map_ref` doesn't take ownership of the referenced value.
+It is usually preferable to use `map_ref` over `map` when possible.
+However, it is not always possible to use `map_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map`:
+```rust
+let mapped = store.map(|state| state.some_vector.len());
+```
+
+# Why is it so fast?
+## Custom hooks
+The store utilizes highly optimized custom hooks for better performance and memory efficiency.
+## Renders only when and where needed
+Subscriptions done to the store with `map`, `map_ref` and `watch` will only trigger a render on the component if the observed value has changed.
+## Reference VS Ownership
+Instead of propagating clone/copy of the application state throughout components, references are used.
+
+# Good practices
+## Reference only what's needed
+When you are observing a value in the store, make sure you are not taking more than necessary. For instance, if you are only interested in a single value from a vector, there is no need to reference the entire vector:
+```rust
+let mapped = store.map_ref(|state| &state.some_vector[0]);
+let another = store.map_ref(|state| state.some_vector.iter().last().expect("to have a value"));
+```
+
+## Segregation of stores in large applications
+When and where it makes sense, try to break your monolithic stores into multiple. Doing so will improve the performance of the application as a whole.
