@@ -12,9 +12,9 @@ yewv = { git = "https://github.com/yewv/yewv" }
 ```
 # Usage
 3 things need to be respected while using this library:
-1. Only works with `Yew` functional components.
-2. Store/service context must be registered in a **parent** or **root** component with `ContextProvider`.
-3. Store/service needs to be used in a **child** component with `use_store`/`use_service`.
+1. Only works with Yew functional components.
+2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
+3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
 ## Simple app with store
 ```rust
 // main.rs

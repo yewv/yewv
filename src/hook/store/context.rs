@@ -89,8 +89,9 @@ fn use_store_sub<T>(store: Rc<Store<T>>, sub: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) ->
     use_hook(
         || Rc::new(RefCell::new(false)),
         move |s, u| {
-            if !*s.borrow() {
-                *s.borrow_mut() = true;
+            let mut is_init = s.borrow_mut();
+            if !*is_init {
+                *is_init = true;
                 let s = s.clone();
                 store.subscribe(move |o, n| {
                     let is_active = *s.borrow();
