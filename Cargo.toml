@@ -2,8 +2,17 @@
 name = "yewv"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/yewv/yewv"
+homepage = "https://github.com/yewv/yewv"
+documentation = "https://github.com/yewv/yewv/blob/main/README.md"
+license = "MIT"
+keywords = ["yew", "state", "store"]
+categories = ["yew", "state", "store"]
+description = "A lightning fast state management module for Yew"
+readme = "README.md"
+rust-version = "1.56.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-yew = "0"
+yew = "0.19"
