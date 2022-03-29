@@ -8,7 +8,7 @@ this library is made for you.
 # Install
 ```toml
 [dependencies]
-yewv = { git = "https://github.com/yewv/yewv" }
+yewv = "0.1"
 ```
 # Usage
 3 things need to be respected while using this library:
