@@ -122,7 +122,7 @@ As opposed to `map`, `map_ref` doesn't take ownership of the referenced value.
 It is usually preferable to use `map_ref` over `map` when possible.
 However, it is not always possible to use `map_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map`:
 ```rust
-let mapped = store.map(|state| state.some_vector.len());
+let length = store.map(|state| state.some_vector.len());
 ```
 
 ## Why is it so fast?
@@ -137,8 +137,8 @@ Instead of propagating clone/copy of the application state throughout components
 ### Reference only what's needed
 When you are observing a value in a store, make sure you are not taking more than necessary. For instance, if you are only interested in a single value from a vector, there is no need to reference the entire vector:
 ```rust
-let mapped = store.map_ref(|state| &state.some_vector[0]);
-let another = store.map_ref(|state| state.some_vector.iter().last().expect("to have a value"));
+let first = store.map_ref(|state| &state.some_vector[0]);
+let last = store.map_ref(|state| state.some_vector.iter().last().expect("to have a value"));
 ```
 
 ### Segregation of stores in large applications
