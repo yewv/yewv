@@ -3,6 +3,7 @@ use std::{
     rc::Rc,
 };
 
+/// Simple store with subscription capability.
 pub struct Store<T> {
     previous_state: RefCell<Rc<T>>,
     state: RefCell<Rc<T>>,
@@ -10,6 +11,13 @@ pub struct Store<T> {
 }
 
 impl<T> Store<T> {
+    /// Create a new instance of a store with the given state as initial state.
+    /// ```rust
+    /// use yewv::Store;
+    ///
+    /// let store = Store::new(0);
+    /// assert_eq!(*store.state(), 0);
+    /// ```
     pub fn new(initial_state: T) -> Self {
         let state = Rc::new(initial_state);
         Self {
@@ -19,14 +27,28 @@ impl<T> Store<T> {
         }
     }
 
+    /// Give a reference to the current store state.
+    /// ```rust
+    /// use yewv::Store;
+    ///
+    /// let store = Store::new(0);
+    /// assert_eq!(*store.state(), 0);
+    /// store.set_state(1);
+    /// assert_eq!(*store.state(), 1);
+    /// ```
     pub fn state(&self) -> Rc<T> {
         self.state.borrow().clone()
     }
 
-    pub(crate) fn state_ref(&self) -> Ref<Rc<T>> {
-        self.state.borrow()
-    }
-
+    /// Set store next state.
+    /// ```rust
+    /// use yewv::Store;
+    ///
+    /// let store = Store::new(0);
+    /// assert_eq!(*store.state(), 0);
+    /// store.set_state(1);
+    /// assert_eq!(*store.state(), 1);
+    /// ```
     pub fn set_state(&self, new_state: T) {
         {
             let mut state = self.state.borrow_mut();
@@ -36,14 +58,30 @@ impl<T> Store<T> {
         self.notify();
     }
 
+    /// Subscibe to changes made to the store state.
+    /// Your subscription will stay active as long as your `callback` returns `true`.
+    /// When the `callback` returns `false` the subscription will be dropped.
+    /// ```rust
+    /// use yewv::Store;
+    ///
+    /// let store = Store::new(0);
+    /// store.subscribe(|prev_state, current_state| {
+    ///     /* Put your own subscription logic. */
+    ///     true // Should be the condition for unsubscription.
+    /// } );
+    /// ```
+    pub fn subscribe(&self, callback: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static) {
+        self.subscriptions.borrow_mut().push(Box::from(callback));
+    }
+
     pub(crate) fn notify(&self) {
         let mut subs = self.subscriptions.borrow_mut().split_off(0);
         subs.retain(|s| s(self.previous_state.borrow(), self.state_ref()));
         self.subscriptions.borrow_mut().append(&mut subs);
     }
 
-    pub fn subscribe(&self, callback: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static) {
-        self.subscriptions.borrow_mut().push(Box::from(callback));
+    pub(crate) fn state_ref(&self) -> Ref<Rc<T>> {
+        self.state.borrow()
     }
 }
 

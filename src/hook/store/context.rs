@@ -6,6 +6,7 @@ use std::{
 };
 use yew::{use_hook, use_mut_ref};
 
+/// Context which holds a reference to the store.
 pub struct StoreContext<T>
 where
     T: 'static,
@@ -32,14 +33,35 @@ where
         }
     }
 
-    pub fn map<M: 'static>(&self, callback: impl Fn(&T) -> M + 'static) -> Rc<M>
+    /// (Hook) Subscribe to the store and return the value mapped.
+    /// If you only wish to reference a value owned by the store, you should use `map_ref` instead.
+    /// A change to the observed value will re-render the component.
+    /// ```rust
+    /// use yew::prelude::*;
+    /// use yewv::*;
+    ///
+    /// struct StoreState {
+    ///     value: i32
+    /// }
+    ///
+    /// #[function_component(Test)]
+    /// fn test() -> Html {
+    ///     let store = use_store::<StoreState>();
+    ///     let value = store.map(|state| state.value);
+    ///     
+    ///     html!{
+    ///         <>{ value }</>
+    ///     }
+    /// }
+    /// ```
+    pub fn map<M: 'static>(&self, map: impl Fn(&T) -> M + 'static) -> Rc<M>
     where
         M: PartialEq,
     {
-        let state = use_mut_ref(|| Rc::new(callback(&self.store.state_ref())));
+        let state = use_mut_ref(|| Rc::new(map(&self.store.state_ref())));
         let value = state.borrow().clone();
         use_store_sub(self.store.clone(), move |_, new_state| {
-            let new_value = callback(&new_state);
+            let new_value = map(&new_state);
             let mut current_value = state.borrow_mut();
             if (**current_value).ne(&new_value) {
                 *current_value = Rc::new(new_value);
@@ -51,6 +73,26 @@ where
         value
     }
 
+    /// (Hook) Subscribe to the store and return a reference to the value mapped.
+    /// A change to the observed value will re-render the component.
+    /// ```rust
+    /// use yew::prelude::*;
+    /// use yewv::*;
+    ///
+    /// struct StoreState {
+    ///     value: i32
+    /// }
+    ///
+    /// #[function_component(Test)]
+    /// fn test() -> Html {
+    ///     let store = use_store::<StoreState>();
+    ///     let value = store.map_ref(|state| &state.value);
+    ///     
+    ///     html!{
+    ///         <>{ value }</>
+    ///     }
+    /// }
+    /// ```
     pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M>
     where
         M: PartialEq,
@@ -60,6 +102,26 @@ where
         state
     }
 
+    /// (Hook) Subscribe to a specific store value.
+    /// A change to the observed value will re-render the component.
+    /// ```rust
+    /// use yew::prelude::*;
+    /// use yewv::*;
+    ///
+    /// struct StoreState {
+    ///     value: i32
+    /// }
+    ///
+    /// #[function_component(Test)]
+    /// fn test() -> Html {
+    ///     let store = use_store::<StoreState>();
+    ///     let value = store.watch(|state| &state.value);
+    ///     
+    ///     html!{
+    ///         <>{ store.state().value }</>
+    ///     }
+    /// }
+    /// ```
     pub fn watch<W: PartialEq>(&self, watch: impl Fn(&Rc<T>) -> &W + 'static) {
         use_store_sub(self.store.clone(), move |old_state, new_state| {
             *Ref::map(old_state, &watch) != *Ref::map(new_state, &watch)

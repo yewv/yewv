@@ -1,7 +1,8 @@
 use std::{ops::Deref, rc::Rc};
 
+/// Context which holds a reference to the service `T`.
 pub struct ServiceContext<T> {
-    service: Rc<T>,
+    pub service: Rc<T>,
 }
 
 impl<T> ServiceContext<T> {

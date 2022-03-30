@@ -10,7 +10,6 @@ keywords = ["yew", "state", "store"]
 categories = ["gui", "wasm", "web-programming"]
 description = "A lightning fast state management module for Yew"
 readme = "README.md"
-rust-version = "1.56.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
