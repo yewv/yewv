@@ -16,7 +16,6 @@
 //! 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
 //! ### Simple app with store
 //! ```rust
-//! // main.rs
 //! use yew::prelude::*;
 //! use yewv::*;
 //!
@@ -52,15 +51,10 @@
 //!         <button {onclick}>{format!("{} +", count)}</button>
 //!     }
 //! }
-//!
-//! fn main() {
-//!     yew::start_app::<App>();
-//! }
 //! ```
 //!
 //! ### Simple app with store and service
 //! ```rust
-//! // main.rs
 //! use yew::prelude::*;
 //! use yewv::*;
 //!
@@ -109,10 +103,6 @@
 //!         <button {onclick}>{format!("{} +", count)}</button>
 //!     }
 //! }
-//!
-//! fn main() {
-//!     yew::start_app::<App>();
-//! }
 //! ```
 //!
 //! ### map vs map_ref
@@ -121,7 +111,21 @@
 //! It is usually preferable to use `map_ref` over `map` when possible.
 //! However, it is not always possible to use `map_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map`:
 //! ```rust
-//! let mapped = store.map(|state| state.some_vector.len());
+//! use yewv::*;
+//! use yew::prelude::*;
+//! use yewv::*;
+//!
+//! struct StoreState {
+//!     vector: Vec<i32>
+//! }
+//!
+//! #[function_component(Test)]
+//! fn test() -> Html {
+//!     let store = use_store::<StoreState>();
+//! 	let mapped = store.map(|state| state.vector.len());
+//!     
+//!     html!{ <>{ mapped }</> }
+//! }
 //! ```
 //!
 //! ## Why is it so fast?
@@ -136,8 +140,22 @@
 //! ### Reference only what's needed
 //! When you are observing a value in a store, make sure you are not taking more than necessary. For instance, if you are only interested in a single value from a vector, there is no need to reference the entire vector:
 //! ```rust
-//! let mapped = store.map_ref(|state| &state.some_vector[0]);
-//! let another = store.map_ref(|state| state.some_vector.iter().last().expect("to have a value"));
+//! use yewv::*;
+//! use yew::prelude::*;
+//! use yewv::*;
+//!
+//! struct StoreState {
+//!     vector: Vec<i32>
+//! }
+//!
+//! #[function_component(Test)]
+//! fn test() -> Html {
+//!     let store = use_store::<StoreState>();
+//! 	let mapped = store.map_ref(|state| &state.vector[0]);
+//! 	let another = store.map_ref(|state| state.vector.iter().last().expect("to have a value"));
+//!     
+//!     html!{ <>{ mapped } { " and "} { another }</> }
+//! }
 //! ```
 //!
 //! ### Segregation of stores in large applications
