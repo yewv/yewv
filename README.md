@@ -1,4 +1,4 @@
-# yewv
+# yewv ![Rust](https://github.com/yewv/yewv/workflows/Rust/badge.svg)
 A lightning fast state management module for Yew built with performance and simplicity as a first priority.
 
 ## Who is this for?
