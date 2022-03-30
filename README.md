@@ -2,8 +2,7 @@
 A lightning fast state management module for Yew built with performance and simplicity as a first priority.
 
 ## Who is this for?
-If you wish to separate the visual concerns and the business logic from your components with a store,
-this library is made for you.
+If you wish to use a store alongside Yew fonction components, this library is made for you.
 
 ## Install
 Add the following dependency to your `Cargo.toml`.

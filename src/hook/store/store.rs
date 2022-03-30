@@ -137,12 +137,12 @@ mod tests {
 
     #[test]
     fn subscribe_with_callback_should_add_callback_to_subscriptions() {
-        //Arrange
+        //Given
         let ctx = setup(0);
         let sub_count = ctx.store.subscriptions.borrow().len();
-        //Act
+        //When
         ctx.store.subscribe(|_, _| false);
-        //Assert
+        //Then
         assert_eq!(ctx.store.subscriptions.borrow().len(), sub_count + 1);
     }
 }
