@@ -1,13 +1,11 @@
 use super::Store;
 use std::{
     cell::{Ref, RefCell},
-    fmt::Debug,
     ops::Deref,
     rc::Rc,
 };
 use yew::{use_hook, use_mut_ref};
 
-#[derive(Debug)]
 pub struct StoreContext<T>
 where
     T: 'static,

@@ -1,6 +1,5 @@
 use std::{ops::Deref, rc::Rc};
 
-#[derive(Debug)]
 pub struct ServiceContext<T> {
     service: Rc<T>,
 }
