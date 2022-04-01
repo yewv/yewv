@@ -27,7 +27,7 @@
 //! fn app() -> Html {
 //!     let store = StoreContext::new(AppState { count: 0 });
 //!     html! {
-//!         <ContextProvider<StoreContext<AppState>> context={store} >
+//!         <ContextProvider<StoreContext<AppState>> context={store}>
 //!             <Counter />
 //!             <Counter />
 //!         </ContextProvider<StoreContext<AppState>>>
@@ -82,8 +82,8 @@
 //!         store: store.clone(),
 //!     });
 //!     html! {
-//!         <ContextProvider<StoreContext<AppState>> context={store} >
-//!         <ContextProvider<ServiceContext<AppService>> context={service} >
+//!         <ContextProvider<StoreContext<AppState>> context={store}>
+//!         <ContextProvider<ServiceContext<AppService>> context={service}>
 //!             <Counter />
 //!             <Counter />
 //!         </ContextProvider<ServiceContext<AppService>>>
@@ -123,7 +123,7 @@
 //!     let store = use_store::<StoreState>();
 //! 	let length = store.map(|state| state.vector.len());
 //!     
-//!     html!{ <>{ length }</> }
+//!     html!{ { length } }
 //! }
 //! ```
 //!
@@ -152,7 +152,7 @@
 //! 	let first = store.map_ref(|state| &state.vector[0]);
 //! 	let last = store.map_ref(|state| state.vector.iter().last().expect("to have a value"));
 //!     
-//!     html!{ <>{ first } { " and " } { last }</> }
+//!     html!{ format!("{} and {}", first, last) }
 //! }
 //! ```
 //!

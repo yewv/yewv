@@ -19,9 +19,7 @@ use yew::use_context;
 ///     let store = use_store::<StoreState>();
 ///     let value = store.map_ref(|state| &state.value);
 ///     
-///     html!{
-///         <>{ value }</>
-///     }
+///     html!{ { value } }
 /// }
 /// ```
 pub fn use_store<T>() -> StoreContext<T> {

@@ -49,15 +49,10 @@ where
     ///     let store = use_store::<StoreState>();
     ///     let value = store.map(|state| state.value);
     ///     
-    ///     html!{
-    ///         <>{ value }</>
-    ///     }
+    ///     html!{ { value } }
     /// }
     /// ```
-    pub fn map<M: 'static>(&self, map: impl Fn(&T) -> M + 'static) -> Rc<M>
-    where
-        M: PartialEq,
-    {
+    pub fn map<M: PartialEq + 'static>(&self, map: impl Fn(&T) -> M + 'static) -> Rc<M> {
         let state = use_mut_ref(|| Rc::new(map(&self.store.state_ref())));
         let value = state.borrow().clone();
         use_store_sub(self.store.clone(), move |_, new_state| {
@@ -88,17 +83,12 @@ where
     ///     let store = use_store::<StoreState>();
     ///     let value = store.map_ref(|state| &state.value);
     ///     
-    ///     html!{
-    ///         <>{ value }</>
-    ///     }
+    ///     html!{ { value } }
     /// }
     /// ```
-    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M>
-    where
-        M: PartialEq,
-    {
+    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M> {
         let state = Ref::map(self.store.state_ref(), &map);
-        self.watch(map);
+        self.watch_ref(map);
         state
     }
 
@@ -115,16 +105,43 @@ where
     /// #[function_component(Test)]
     /// fn test() -> Html {
     ///     let store = use_store::<StoreState>();
-    ///     let value = store.watch(|state| &state.value);
+    ///     store.watch_ref(|state| &state.value);
     ///     
-    ///     html!{
-    ///         <>{ store.state().value }</>
-    ///     }
+    ///     html!{ { store.state().value } }
     /// }
     /// ```
-    pub fn watch<W: PartialEq>(&self, watch: impl Fn(&Rc<T>) -> &W + 'static) {
+    pub fn watch_ref<W: PartialEq>(&self, watch: impl Fn(&Rc<T>) -> &W + 'static) {
         use_store_sub(self.store.clone(), move |old_state, new_state| {
             *Ref::map(old_state, &watch) != *Ref::map(new_state, &watch)
+        });
+    }
+
+    /// (Hook) Subscribe to a specific store value.
+    /// A change to the observed value will re-render the component.
+    /// ```rust
+    /// use yew::prelude::*;
+    /// use yewv::*;
+    ///
+    /// struct StoreState {
+    ///     value: i32
+    /// }
+    ///
+    /// #[function_component(Test)]
+    /// fn test() -> Html {
+    ///     let store = use_store::<StoreState>();
+    ///     store.watch(|state| state.value);
+    ///     
+    ///     html!{ { store.state().value } }
+    /// }
+    /// ```
+    pub fn watch<W: PartialEq + 'static>(&self, watch: impl Fn(&T) -> W + 'static) {
+        let state = use_mut_ref(|| watch(&self.store.state_ref()));
+        use_store_sub(self.store.clone(), move |_, new_state| {
+            let new_value = watch(&new_state);
+            let mut current_value = state.borrow_mut();
+            let has_changed = (*current_value).ne(&new_value);
+            *current_value = new_value;
+            has_changed
         });
     }
 }
