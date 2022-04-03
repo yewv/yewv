@@ -8,7 +8,7 @@ If you wish to use a store alongside Yew fonction components, this library is ma
 Add the following dependency to your `Cargo.toml`.
 ```toml
 [dependencies]
-yewv = "0.1"
+yewv = "0.2"
 ```
 ## Usage
 The following need to be respected while using this library:
