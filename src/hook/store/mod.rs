@@ -1,12 +1,13 @@
 mod context;
+mod handle;
 mod store;
 
+pub use context::*;
+pub use handle::*;
 use std::{
     cell::{Ref, RefCell},
     rc::Rc,
 };
-
-pub use context::*;
 pub use store::*;
 use yew::{hook, use_context, use_mut_ref, Hook, HookContext};
 
@@ -28,37 +29,44 @@ use yew::{hook, use_context, use_mut_ref, Hook, HookContext};
 /// }
 /// ```
 #[hook]
-pub fn use_store<T: 'static>() -> StoreContext<T> {
-    let mut context = use_context::<StoreContext<T>>().expect("Store context not registered");
+pub fn use_store<T: 'static>() -> UseStoreHandle<T> {
+    let store_handle = UseStoreHandle::<T> {
+        context: use_context().expect("Store context not registered"),
+        subscriptions: use_mut_ref(|| Subscriptions {
+            states: vec![],
+            subscriptions: vec![],
+            ref_subscriptions: vec![],
+        }),
+    };
 
-    //TODO: Should only be one hook.
-    context.states = use_mut_ref(|| vec![]);
-    context.subscriptions = use_mut_ref(|| vec![]);
-    context.subscriptions.borrow_mut().clear();
-    context.ref_subscriptions = use_mut_ref(|| vec![]);
-    context.ref_subscriptions.borrow_mut().clear();
+    {
+        let mut subs = store_handle.subscriptions.borrow_mut();
+        subs.subscriptions.clear();
+        subs.ref_subscriptions.clear();
+    }
 
-    use_store_subscription(&context, {
-        let states = context.states.clone();
-        let subscriptions = context.subscriptions.clone();
-        let ref_subscriptions = context.ref_subscriptions.clone();
+    use_store_subscription(&store_handle, {
+        let subs = store_handle.subscriptions.clone();
         move |prev, next| {
-            let mut states = states.borrow_mut();
-            let mut require_render = false;
-            for (i, sub) in subscriptions.borrow().iter().enumerate() {
-                let state = states
-                    .get(i)
-                    .expect("Store subscription has no corresponding state.");
-                let next_state = sub(state.clone(), &next);
-                if !Rc::ptr_eq(state, &next_state) {
-                    require_render |= true;
-                    states[i] = next_state;
+            let mut subs = subs.borrow_mut();
+            if !subs.subscriptions.is_empty() {
+                let mut require_render = false;
+                let mut next_states = vec![];
+                for (i, sub) in subs.subscriptions.iter().enumerate() {
+                    let state = subs
+                        .states
+                        .get(i)
+                        .expect("Store subscription has no corresponding state.");
+                    let next_state = sub(state.clone(), &next);
+                    require_render |= !Rc::ptr_eq(&state, &next_state);
+                    next_states.push(next_state);
+                }
+                subs.states = next_states;
+                if require_render {
+                    return true;
                 }
             }
-            if require_render {
-                return true;
-            }
-            for sub in ref_subscriptions.borrow().iter() {
+            for sub in subs.ref_subscriptions.iter() {
                 if sub(Ref::clone(&prev), Ref::clone(&next)) {
                     return true;
                 }
@@ -67,7 +75,7 @@ pub fn use_store<T: 'static>() -> StoreContext<T> {
         }
     });
 
-    context
+    store_handle
 }
 
 fn use_store_subscription<'a, T: 'static>(
