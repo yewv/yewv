@@ -7,13 +7,16 @@
 //! Add the following dependency to your `Cargo.toml`.
 //! ```toml
 //! [dependencies]
-//! yewv = "0.1"
+//! yewv = "0.3"
 //! ```
 //! # Usage
 //! The following need to be respected while using this library:
 //! 1. Only works with Yew function components.
 //! 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 //! 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
+//! 4. `map`, `map_ref`, `watch` and `watch_ref` are hooks and are therefore constrained to certains rules:
+//!     - Can only be called inside Yew function components.
+//!     - Cannot be called inside loops, conditions, or nested functions.
 //! ## Simple app with store
 //! ```rust
 //! use yew::prelude::*;
@@ -105,11 +108,11 @@
 //! }
 //! ```
 //!
-//! ## map vs map_ref
-//! If you only wish to reference a value owned by the store, you should use `map_ref`.
-//! As opposed to `map`, `map_ref` doesn't take ownership of the referenced value.
-//! It is usually preferable to use `map_ref` over `map` when possible.
-//! However, it is not always possible to use `map_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map`:
+//! ## map vs map_ref & watch vs watch_ref
+//! If you only wish to reference a value owned by the store, you should use `map_ref|watch_ref`.
+//! As opposed to `map|watch`, `map_ref|watch_ref` doesn't take ownership of the referenced value.
+//! It is usually preferable to use `map_ref|watch_ref` over `map|watch` when possible.
+//! However, it is not always possible to use `map_ref|watch_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map|watch`:
 //! ```rust
 //! use yew::prelude::*;
 //! use yewv::*;

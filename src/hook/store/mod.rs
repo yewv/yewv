@@ -5,11 +5,12 @@ mod store;
 pub use context::*;
 pub use handle::*;
 use std::{
+    any::Any,
     cell::{Ref, RefCell},
     rc::Rc,
 };
 pub use store::*;
-use yew::{hook, use_context, use_mut_ref, Hook, HookContext};
+use yew::{hook, html::AnyScope, use_context, use_mut_ref, Hook, HookContext};
 
 /// Obtain a store context for the given state `T`.
 /// ```rust
@@ -99,6 +100,8 @@ fn use_store_subscription<'a, T: 'static>(
         type Output = ();
 
         fn run(self, ctx: &mut HookContext) -> Self::Output {
+            // HACK: It is way faster to implement our own hook (~2x more efficient).
+            let ctx: &mut MyHookContext = unsafe { std::mem::transmute(ctx) };
             ctx.next_state(|r| {
                 let is_active = Rc::new(RefCell::new(true));
                 let watch = WatchState(is_active.clone());
@@ -117,4 +120,37 @@ fn use_store_subscription<'a, T: 'static>(
     }
 
     HookProvider { store, callback }
+}
+
+/// HACK: Clone of yew::functional::HookContext for transumation.
+#[allow(dead_code)]
+struct MyHookContext {
+    scope: AnyScope,
+    re_render: Rc<dyn Fn()>,
+
+    states: Vec<Rc<dyn Any>>,
+    effects: Vec<Rc<dyn Any>>,
+
+    counter: usize,
+}
+
+impl MyHookContext {
+    pub(crate) fn next_state<T>(&mut self, initializer: impl FnOnce(Rc<dyn Fn()>) -> T) -> Rc<T>
+    where
+        T: 'static,
+    {
+        // Determine which hook position we're at and increment for the next hook
+        let hook_pos = self.counter;
+        self.counter += 1;
+
+        match self.states.get(hook_pos) {
+            Some(m) => m.clone().downcast().unwrap(),
+            None => {
+                let initial_state = Rc::new(initializer(self.re_render.clone()));
+                self.states.push(initial_state.clone());
+
+                initial_state
+            }
+        }
+    }
 }
