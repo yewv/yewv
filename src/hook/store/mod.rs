@@ -10,7 +10,7 @@ use std::{
     rc::Rc,
 };
 pub use store::*;
-use yew::{hook, html::AnyScope, use_context, use_mut_ref, Hook, HookContext};
+use yew::{hook, html::AnyScope, use_context, Hook, HookContext};
 
 /// Obtain a store context for the given state `T`.
 /// ```rust
@@ -31,73 +31,35 @@ use yew::{hook, html::AnyScope, use_context, use_mut_ref, Hook, HookContext};
 /// ```
 #[hook]
 pub fn use_store<T: 'static>() -> UseStoreHandle<T> {
-    let store_handle = UseStoreHandle::<T> {
-        context: use_context().expect("Store context not registered"),
-        subscriptions: use_mut_ref(|| Subscriptions {
-            states: vec![],
-            subscriptions: vec![],
-            ref_subscriptions: vec![],
-        }),
-    };
-
+    let context = use_context::<StoreContext<T>>().expect("Store context not registered");
+    let subscriptions = use_store_subscription(&context);
     {
-        let mut subs = store_handle.subscriptions.borrow_mut();
+        let mut subs = subscriptions.borrow_mut();
         subs.subscriptions.clear();
         subs.ref_subscriptions.clear();
     }
 
-    use_store_subscription(&store_handle, {
-        let subs = store_handle.subscriptions.clone();
-        move |prev, next| {
-            let mut subs = subs.borrow_mut();
-            if !subs.subscriptions.is_empty() {
-                let mut require_render = false;
-                let mut next_states = vec![];
-                for (i, sub) in subs.subscriptions.iter().enumerate() {
-                    let state = subs
-                        .states
-                        .get(i)
-                        .expect("Store subscription has no corresponding state.");
-                    let next_state = sub(state.clone(), &next);
-                    require_render |= !Rc::ptr_eq(&state, &next_state);
-                    next_states.push(next_state);
-                }
-                subs.states = next_states;
-                if require_render {
-                    return true;
-                }
-            }
-            for sub in subs.ref_subscriptions.iter() {
-                if sub(Ref::clone(&prev), Ref::clone(&next)) {
-                    return true;
-                }
-            }
-            false
-        }
-    });
-
-    store_handle
+    UseStoreHandle {
+        context,
+        subscriptions,
+    }
 }
 
 fn use_store_subscription<'a, T: 'static>(
     store: &'a Store<T>,
-    callback: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static,
-) -> impl 'a + Hook<Output = ()> {
+) -> impl 'a + Hook<Output = Rc<RefCell<Subscriptions<T>>>> {
     struct WatchState(Rc<RefCell<bool>>);
     impl Drop for WatchState {
         fn drop(&mut self) {
             *self.0.borrow_mut() = false;
         }
     }
-    struct HookProvider<'a, T: 'static, C: Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool> {
+    struct HookProvider<'a, T: 'static> {
         store: &'a Store<T>,
-        callback: C,
     }
 
-    impl<'a, T: 'static, C: Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static> Hook
-        for HookProvider<'a, T, C>
-    {
-        type Output = ();
+    impl<'a, T: 'static> Hook for HookProvider<'a, T> {
+        type Output = Rc<RefCell<Subscriptions<T>>>;
 
         fn run(self, ctx: &mut HookContext) -> Self::Output {
             // HACK: It is way faster to implement our own hook (~2x more efficient).
@@ -105,21 +67,53 @@ fn use_store_subscription<'a, T: 'static>(
             ctx.next_state(|r| {
                 let is_active = Rc::new(RefCell::new(true));
                 let watch = WatchState(is_active.clone());
-                self.store.subscribe(move |prev, next| {
-                    if !*is_active.borrow() {
-                        return false;
+                let subs = Rc::new(RefCell::new(Subscriptions::<T> {
+                    states: vec![],
+                    subscriptions: vec![],
+                    ref_subscriptions: vec![],
+                }));
+                self.store.subscribe({
+                    let subs = subs.clone();
+                    move |prev, next| {
+                        if !*is_active.borrow() {
+                            return false;
+                        }
+                        let mut subs = subs.borrow_mut();
+                        if !subs.subscriptions.is_empty() {
+                            let mut require_render = false;
+                            let mut next_states = vec![];
+                            for (i, sub) in subs.subscriptions.iter().enumerate() {
+                                let state = subs
+                                    .states
+                                    .get(i)
+                                    .expect("Store subscription has no corresponding state.");
+                                let next_state = sub(state.clone(), &next);
+                                require_render |= !Rc::ptr_eq(&state, &next_state);
+                                next_states.push(next_state);
+                            }
+                            subs.states = next_states;
+                            if require_render {
+                                (r)();
+                                return true;
+                            }
+                        }
+                        for sub in subs.ref_subscriptions.iter() {
+                            if sub(Ref::clone(&prev), Ref::clone(&next)) {
+                                (r)();
+                                return true;
+                            }
+                        }
+                        true
                     }
-                    if (self.callback)(prev, next) {
-                        (r)();
-                    }
-                    true
                 });
-                watch
-            });
+                (subs, watch)
+            })
+            .0
+            .clone()
         }
     }
 
-    HookProvider { store, callback }
+    HookProvider { store }
 }
 
 /// HACK: Clone of yew::functional::HookContext for transumation.
@@ -134,8 +128,9 @@ struct MyHookContext {
     counter: usize,
 }
 
+/// HACK: Clone of yew::functional::HookContext for transumation.
 impl MyHookContext {
-    pub(crate) fn next_state<T>(&mut self, initializer: impl FnOnce(Rc<dyn Fn()>) -> T) -> Rc<T>
+    fn next_state<T>(&mut self, initializer: impl FnOnce(Rc<dyn Fn()>) -> T) -> Rc<T>
     where
         T: 'static,
     {

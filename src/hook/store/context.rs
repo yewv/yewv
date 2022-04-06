@@ -2,26 +2,17 @@ use super::Store;
 use std::{ops::Deref, rc::Rc};
 
 /// Context which holds a reference to the store.
-pub struct StoreContext<T>
-where
-    T: 'static,
-{
+pub struct StoreContext<T> {
     pub(crate) store: Rc<super::Store<T>>,
 }
 
-impl<T> PartialEq for StoreContext<T>
-where
-    T: 'static,
-{
+impl<T> PartialEq for StoreContext<T> {
     fn eq(&self, other: &Self) -> bool {
         Rc::ptr_eq(&self.store, &other.store)
     }
 }
 
-impl<T> StoreContext<T>
-where
-    T: 'static,
-{
+impl<T> StoreContext<T> {
     pub fn new(initial_state: T) -> Self {
         Self {
             store: Rc::new(Store::new(initial_state)),
