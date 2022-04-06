@@ -15,7 +15,9 @@ readme = "README.md"
 
 [dependencies]
 yew = { git = "https://github.com/yewstack/yew.git" }
-web-sys = { version = "0.3", features= [ "console" ] }
 
 [dev-dependencies]
+gloo = { version = "0.6", features = ["futures"] }
+gloo-utils = "0.1.0"
+wasm-bindgen-test = "0.3"
 yew = { git = "https://github.com/yewstack/yew.git", features = [ "csr" ] }
