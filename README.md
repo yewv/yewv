@@ -16,8 +16,8 @@ The following need to be respected while using this library:
 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
 4. `map`, `map_ref`, `watch` and `watch_ref` are hooks and are therefore constrained to certains rules:
-    - Can only be called inside Yew function components.
-    - Cannot be called inside loops, conditions, or nested functions.
+    - Should only be called inside Yew function components.
+    - Should not be called inside loops, conditions or nested functions.
 ### Simple app with store
 ```rust
 // main.rs
@@ -28,8 +28,8 @@ struct AppState {
     count: i32,
 }
 
-#[function_component(App)]
-fn app() -> Html {
+#[function_component]
+fn App() -> Html {
     let store = StoreContext::new(AppState { count: 0 });
     html! {
         <ContextProvider<StoreContext<AppState>> context={store}>
@@ -39,8 +39,8 @@ fn app() -> Html {
     }
 }
 
-#[function_component(Counter)]
-fn counter() -> Html {
+#[function_component]
+fn Counter() -> Html {
     let store = use_store::<AppState>();
     let count = store.map_ref(|state| &state.count);
     let onclick = {
@@ -58,7 +58,7 @@ fn counter() -> Html {
 }
 
 fn main() {
-    yew::start_app::<App>();
+    yew::Renderer::<App>::new().render();
 }
 ```
 
@@ -85,8 +85,8 @@ impl AppService {
     }
 }
 
-#[function_component(App)]
-fn app() -> Html {
+#[function_component]
+fn App() -> Html {
     let store = StoreContext::new(AppState { count: 0 });
     let service = ServiceContext::new(AppService {
         store: store.clone(),
@@ -101,8 +101,8 @@ fn app() -> Html {
     }
 }
 
-#[function_component(Counter)]
-fn counter() -> Html {
+#[function_component]
+fn Counter() -> Html {
     let service = use_service::<AppService>();
     let store = use_store::<AppState>();
 
@@ -115,7 +115,7 @@ fn counter() -> Html {
 }
 
 fn main() {
-    yew::start_app::<App>();
+    yew::Renderer::<App>::new().render();
 }
 ```
 

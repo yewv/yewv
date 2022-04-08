@@ -15,8 +15,8 @@
 //! 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 //! 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
 //! 4. `map`, `map_ref`, `watch` and `watch_ref` are hooks and are therefore constrained to certains rules:
-//!     - Can only be called inside Yew function components.
-//!     - Cannot be called inside loops, conditions, or nested functions.
+//!     - Should only be called inside Yew function components.
+//!     - Should not be called inside loops, conditions, or nested functions.
 //! ## Simple app with store
 //! ```rust
 //! use yew::prelude::*;
@@ -26,8 +26,8 @@
 //!     count: i32,
 //! }
 //!
-//! #[function_component(App)]
-//! fn app() -> Html {
+//! #[function_component]
+//! fn App() -> Html {
 //!     let store = StoreContext::new(AppState { count: 0 });
 //!     html! {
 //!         <ContextProvider<StoreContext<AppState>> context={store}>
@@ -37,8 +37,8 @@
 //!     }
 //! }
 //!
-//! #[function_component(Counter)]
-//! fn counter() -> Html {
+//! #[function_component]
+//! fn Counter() -> Html {
 //!     let store = use_store::<AppState>();
 //!     let count = store.map_ref(|state| &state.count);
 //!     let onclick = {
@@ -78,8 +78,8 @@
 //!     }
 //! }
 //!
-//! #[function_component(App)]
-//! fn app() -> Html {
+//! #[function_component]
+//! fn App() -> Html {
 //!     let store = StoreContext::new(AppState { count: 0 });
 //!     let service = ServiceContext::new(AppService {
 //!         store: store.clone(),
@@ -94,8 +94,8 @@
 //!     }
 //! }
 //!
-//! #[function_component(Counter)]
-//! fn counter() -> Html {
+//! #[function_component]
+//! fn Counter() -> Html {
 //!     let service = use_service::<AppService>();
 //!     let store = use_store::<AppState>();
 //!
@@ -121,8 +121,8 @@
 //!     vector: Vec<i32>
 //! }
 //!
-//! #[function_component(Test)]
-//! fn test() -> Html {
+//! #[function_component]
+//! fn Test() -> Html {
 //!     let store = use_store::<StoreState>();
 //! 	let length = store.map(|state| state.vector.len());
 //!     
@@ -149,8 +149,8 @@
 //!     vector: Vec<i32>
 //! }
 //!
-//! #[function_component(Test)]
-//! fn test() -> Html {
+//! #[function_component]
+//! fn Test() -> Html {
 //!     let store = use_store::<StoreState>();
 //! 	let first = store.map_ref(|state| &state.vector[0]);
 //! 	let last = store.map_ref(|state| state.vector.iter().last().expect("to have a value"));

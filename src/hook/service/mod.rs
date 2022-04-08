@@ -16,8 +16,8 @@ use yew::{hook, use_context};
 ///     }
 /// }
 ///
-/// #[function_component(Test)]
-/// fn test() -> Html {
+/// #[function_component]
+/// fn Test() -> Html {
 ///     let service = use_service::<AppService>();
 ///     let onclick = move |_| service.trigger_some_action();
 ///     

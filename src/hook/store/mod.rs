@@ -21,8 +21,8 @@ use yew::{hook, html::AnyScope, use_context, Hook, HookContext};
 ///     value: i32
 /// }
 ///
-/// #[function_component(Test)]
-/// fn test() -> Html {
+/// #[function_component]
+/// fn Test() -> Html {
 ///     let store = use_store::<StoreState>();
 ///     let value = store.map_ref(|state| &state.value);
 ///     

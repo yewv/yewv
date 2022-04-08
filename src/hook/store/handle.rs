@@ -30,8 +30,8 @@ impl<T: 'static> UseStoreHandle<T> {
     ///     value: i32
     /// }
     ///
-    /// #[function_component(Test)]
-    /// fn test() -> Html {
+    /// #[function_component]
+    /// fn Test() -> Html {
     ///     let store = use_store::<StoreState>();
     ///     let value = store.map(|state| state.value);
     ///     
@@ -77,8 +77,8 @@ impl<T: 'static> UseStoreHandle<T> {
     ///     value: i32
     /// }
     ///
-    /// #[function_component(Test)]
-    /// fn test() -> Html {
+    /// #[function_component]
+    /// fn Test() -> Html {
     ///     let store = use_store::<StoreState>();
     ///     let value = store.map_ref(|state| &state.value);
     ///     
@@ -106,8 +106,8 @@ impl<T: 'static> UseStoreHandle<T> {
     ///     value: i32
     /// }
     ///
-    /// #[function_component(Test)]
-    /// fn test() -> Html {
+    /// #[function_component]
+    /// fn Test() -> Html {
     ///     let store = use_store::<StoreState>();
     ///     store.watch_ref(|state| &state.value);
     ///     
@@ -133,8 +133,8 @@ impl<T: 'static> UseStoreHandle<T> {
     ///     value: i32
     /// }
     ///
-    /// #[function_component(Test)]
-    /// fn test() -> Html {
+    /// #[function_component]
+    /// fn Test() -> Html {
     ///     let store = use_store::<StoreState>();
     ///     store.watch(|state| state.value);
     ///     
