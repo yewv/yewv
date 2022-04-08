@@ -41,10 +41,10 @@ pub fn StoreApp(props: &StoreAppProps) -> Html {
         <div id={"result"}>
         {
             match &props.sub_type {
-                SubscriptionType::Map => html! { <StoreMapRefComponent render_count={props.render_count.clone()} /> },
+                SubscriptionType::Map => html! { <StoreMapComponent render_count={props.render_count.clone()} /> },
                 SubscriptionType::MapRef => html! { <StoreMapRefComponent render_count={props.render_count.clone()} /> },
-                SubscriptionType::Watch => html! { <StoreMapRefComponent render_count={props.render_count.clone()} /> },
-                SubscriptionType::WatchRef => html! { <StoreMapRefComponent render_count={props.render_count.clone()} /> },
+                SubscriptionType::Watch => html! { <StoreWatchComponent render_count={props.render_count.clone()} /> },
+                SubscriptionType::WatchRef => html! { <StoreWatchRefComponent render_count={props.render_count.clone()} /> },
             }
         }
         </div>
