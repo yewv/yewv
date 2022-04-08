@@ -19,3 +19,7 @@ jobs:
         run: cargo build --verbose
       - name: Run tests
         run: cargo test --verbose
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Run integration tests
+        run: wasm-pack test --headless --firefox --chrome --verbose

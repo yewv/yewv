@@ -15,3 +15,8 @@ readme = "README.md"
 
 [dependencies]
 yew = "0.19"
+
+[dev-dependencies]
+gloo = { version = "0.6", features = ["futures"] }
+gloo-utils = "0.1.0"
+wasm-bindgen-test = "0.3"
