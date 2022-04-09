@@ -3,13 +3,16 @@ use std::time::Duration;
 
 use gloo::timers::future::sleep;
 pub use store::*;
-use yew::prelude::*;
+use yew::IntoComponent;
 
-pub async fn render_with_props<C: Component + 'static>(props: <C as Component>::Properties) {
-    yew::start_app_with_props_in_element::<C>(
+pub async fn render_with_props<C: IntoComponent + 'static>(
+    props: <C as IntoComponent>::Properties,
+) {
+    yew::Renderer::<C>::with_root_and_props(
         gloo_utils::document().get_element_by_id("output").unwrap(),
         props,
-    );
+    )
+    .render();
     sleep(Duration::ZERO).await;
 }
 

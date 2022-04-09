@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use yew::prelude::*;
-use yew::{function_component, ContextProvider};
+use yew::{function_component, ContextProvider, Html};
 use yewv::*;
 
 pub struct StoreState {
@@ -34,8 +34,8 @@ impl StoreAppProps {
     }
 }
 
-#[function_component(StoreApp)]
-pub fn store_app(props: &StoreAppProps) -> Html {
+#[function_component]
+pub fn StoreApp(props: &StoreAppProps) -> Html {
     html! {
         <ContextProvider<StoreContext<StoreState>> context={props.context.clone()}>
         <div id={"result"}>
@@ -57,8 +57,8 @@ struct StoreComponentProps {
     pub render_count: Rc<RefCell<i32>>,
 }
 
-#[function_component(StoreMapComponent)]
-fn store_map_component(props: &StoreComponentProps) -> Html {
+#[function_component]
+fn StoreMapComponent(props: &StoreComponentProps) -> Html {
     let store = use_store::<StoreState>();
 
     let value = store.map(|s| s.value);
@@ -66,8 +66,8 @@ fn store_map_component(props: &StoreComponentProps) -> Html {
     html! { { value } }
 }
 
-#[function_component(StoreMapRefComponent)]
-fn store_map_ref_component(props: &StoreComponentProps) -> Html {
+#[function_component]
+fn StoreMapRefComponent(props: &StoreComponentProps) -> Html {
     let store = use_store::<StoreState>();
 
     let value = store.map_ref(|s| &s.value);
@@ -75,8 +75,8 @@ fn store_map_ref_component(props: &StoreComponentProps) -> Html {
     html! { { value } }
 }
 
-#[function_component(StoreWatchComponent)]
-fn store_watch_component(props: &StoreComponentProps) -> Html {
+#[function_component]
+fn StoreWatchComponent(props: &StoreComponentProps) -> Html {
     let store = use_store::<StoreState>();
 
     store.watch(|s| s.value);
@@ -84,8 +84,8 @@ fn store_watch_component(props: &StoreComponentProps) -> Html {
     html! { { store.state().value } }
 }
 
-#[function_component(StoreWatchRefComponent)]
-fn store_watch_ref_component(props: &StoreComponentProps) -> Html {
+#[function_component]
+fn StoreWatchRefComponent(props: &StoreComponentProps) -> Html {
     let store = use_store::<StoreState>();
 
     store.watch_ref(|s| &s.value);

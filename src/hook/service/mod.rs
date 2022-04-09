@@ -1,7 +1,7 @@
 mod context;
 
 pub use context::ServiceContext;
-use yew::use_context;
+use yew::{hook, use_context};
 
 /// Obtain a context for the given service `T`.
 /// ```rust
@@ -16,8 +16,8 @@ use yew::use_context;
 ///     }
 /// }
 ///
-/// #[function_component(Test)]
-/// fn test() -> Html {
+/// #[function_component]
+/// fn Test() -> Html {
 ///     let service = use_service::<AppService>();
 ///     let onclick = move |_| service.trigger_some_action();
 ///     
@@ -26,6 +26,7 @@ use yew::use_context;
 ///     }
 /// }
 /// ```
+#[hook]
 pub fn use_service<T>() -> ServiceContext<T>
 where
     T: 'static,

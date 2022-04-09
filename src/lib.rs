@@ -7,13 +7,16 @@
 //! Add the following dependency to your `Cargo.toml`.
 //! ```toml
 //! [dependencies]
-//! yewv = "0.2"
+//! yewv = "0.3"
 //! ```
 //! # Usage
 //! The following need to be respected while using this library:
 //! 1. Only works with Yew function components.
 //! 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 //! 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
+//! 4. As opposed to `map_ref`, `watch` and `watch_ref`, `map` is a hook and is therefore constrained to certain rules:
+//!     - Should only be called inside Yew function components.
+//!     - Should not be called inside loops, conditions or nested functions.
 //! ## Simple app with store
 //! ```rust
 //! use yew::prelude::*;
@@ -23,8 +26,8 @@
 //!     count: i32,
 //! }
 //!
-//! #[function_component(App)]
-//! fn app() -> Html {
+//! #[function_component]
+//! fn App() -> Html {
 //!     let store = StoreContext::new(AppState { count: 0 });
 //!     html! {
 //!         <ContextProvider<StoreContext<AppState>> context={store}>
@@ -34,8 +37,8 @@
 //!     }
 //! }
 //!
-//! #[function_component(Counter)]
-//! fn counter() -> Html {
+//! #[function_component]
+//! fn Counter() -> Html {
 //!     let store = use_store::<AppState>();
 //!     let count = store.map_ref(|state| &state.count);
 //!     let onclick = {
@@ -75,8 +78,8 @@
 //!     }
 //! }
 //!
-//! #[function_component(App)]
-//! fn app() -> Html {
+//! #[function_component]
+//! fn App() -> Html {
 //!     let store = StoreContext::new(AppState { count: 0 });
 //!     let service = ServiceContext::new(AppService {
 //!         store: store.clone(),
@@ -91,8 +94,8 @@
 //!     }
 //! }
 //!
-//! #[function_component(Counter)]
-//! fn counter() -> Html {
+//! #[function_component]
+//! fn Counter() -> Html {
 //!     let service = use_service::<AppService>();
 //!     let store = use_store::<AppState>();
 //!
@@ -105,11 +108,11 @@
 //! }
 //! ```
 //!
-//! ## map vs map_ref
-//! If you only wish to reference a value owned by the store, you should use `map_ref`.
-//! As opposed to `map`, `map_ref` doesn't take ownership of the referenced value.
-//! It is usually preferable to use `map_ref` over `map` when possible.
-//! However, it is not always possible to use `map_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map`:
+//! ## map vs map_ref & watch vs watch_ref
+//! If you only wish to reference a value owned by the store, you should use `map_ref|watch_ref`.
+//! As opposed to `map|watch`, `map_ref|watch_ref` doesn't take ownership of the referenced value.
+//! It is usually preferable to use `map_ref|watch_ref` over `map|watch` when possible.
+//! However, it is not always possible to use `map_ref|watch_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map|watch`:
 //! ```rust
 //! use yew::prelude::*;
 //! use yewv::*;
@@ -118,8 +121,8 @@
 //!     vector: Vec<i32>
 //! }
 //!
-//! #[function_component(Test)]
-//! fn test() -> Html {
+//! #[function_component]
+//! fn Test() -> Html {
 //!     let store = use_store::<StoreState>();
 //! 	let length = store.map(|state| state.vector.len());
 //!     
@@ -131,7 +134,7 @@
 //! ## Custom hooks
 //! The store utilizes highly optimized custom hooks for better performance and memory efficiency.
 //! ## Renders only when and where needed
-//! Subscriptions done to the store with `map`, `map_ref` and `watch` will only trigger a render on the component if the observed value has changed.
+//! Subscriptions done to the store with `map`, `map_ref` and `watch` will only trigger a re-render if the observed value has changed.
 //! ## Reference VS Ownership
 //! Instead of propagating clone/copy of the application state throughout components, references are used.
 //!
@@ -146,8 +149,8 @@
 //!     vector: Vec<i32>
 //! }
 //!
-//! #[function_component(Test)]
-//! fn test() -> Html {
+//! #[function_component]
+//! fn Test() -> Html {
 //!     let store = use_store::<StoreState>();
 //! 	let first = store.map_ref(|state| &state.vector[0]);
 //! 	let last = store.map_ref(|state| state.vector.iter().last().expect("to have a value"));

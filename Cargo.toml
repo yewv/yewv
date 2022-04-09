@@ -1,6 +1,6 @@
 [package]
 name = "yewv"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 repository = "https://github.com/yewv/yewv"
 homepage = "https://github.com/yewv/yewv"
@@ -14,9 +14,10 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-yew = "0.19"
+yew = { git = "https://github.com/yewstack/yew.git" }
 
 [dev-dependencies]
 gloo = { version = "0.6", features = ["futures"] }
 gloo-utils = "0.1.0"
 wasm-bindgen-test = "0.3"
+yew = { git = "https://github.com/yewstack/yew.git", features = [ "csr" ] }
