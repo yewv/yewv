@@ -20,8 +20,13 @@ pub struct UseStoreHandle<T: 'static> {
 
 impl<T: 'static> UseStoreHandle<T> {
     /// (Hook) Subscribe to the store and return the value mapped.
+    /// As opposed to `map_ref`, `watch` and `watch_ref`, `map` is a hook and is therefore constrained to certain rules:
+    /// - Should only be called inside Yew function components.
+    /// - Should not be called inside loops, conditions or nested functions.
+    ///
     /// If you only wish to reference a value owned by the store, you should use `map_ref` instead.
     /// A change to the observed value will re-render the component.
+    ///
     /// ```rust
     /// use yew::prelude::*;
     /// use yewv::*;
@@ -45,7 +50,7 @@ impl<T: 'static> UseStoreHandle<T> {
             Some(s) => s
                 .clone()
                 .downcast()
-                .expect("Store hooks were called in a different order."),
+                .expect("Store map was called in a different order."),
             None => {
                 let state = Rc::new(map(&self.state_ref()));
                 subscriptions.states.push(state.clone());
@@ -58,7 +63,7 @@ impl<T: 'static> UseStoreHandle<T> {
                 let next = map(next);
                 let prev = prev
                     .downcast::<M>()
-                    .expect("Store hooks were called in a different order.");
+                    .expect("Store map was called in a different order.");
                 if next.ne(&prev) {
                     return Rc::new(next);
                 }
@@ -67,7 +72,7 @@ impl<T: 'static> UseStoreHandle<T> {
         value
     }
 
-    /// (Hook) Subscribe to the store and return a reference to the value mapped.
+    /// Subscribe to the store and return a reference to the value mapped.
     /// A change to the observed value will re-render the component.
     /// ```rust
     /// use yew::prelude::*;
@@ -96,7 +101,7 @@ impl<T: 'static> UseStoreHandle<T> {
         value
     }
 
-    /// (Hook) Subscribe to a specific store value.
+    /// Subscribe to a specific store value.
     /// A change to the observed value will re-render the component.
     /// ```rust
     /// use yew::prelude::*;
@@ -123,7 +128,7 @@ impl<T: 'static> UseStoreHandle<T> {
             }));
     }
 
-    /// (Hook) Subscribe to a specific store value.
+    /// Subscribe to a specific store value.
     /// A change to the observed value will re-render the component.
     /// ```rust
     /// use yew::prelude::*;

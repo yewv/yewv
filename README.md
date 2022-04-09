@@ -15,7 +15,7 @@ The following need to be respected while using this library:
 1. Only works with Yew function components.
 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
-4. `map`, `map_ref`, `watch` and `watch_ref` are hooks and are therefore constrained to certains rules:
+4. As opposed to `map_ref`, `watch` and `watch_ref`, `map` is a hook and is therefore constrained to certain rules:
     - Should only be called inside Yew function components.
     - Should not be called inside loops, conditions or nested functions.
 ### Simple app with store
@@ -132,7 +132,7 @@ let length = store.map(|state| state.some_vector.len());
 ### Custom hooks
 The store utilizes highly optimized custom hooks for better performance and memory efficiency.
 ### Renders only when and where needed
-Subscriptions done to the store with `map`, `map_ref`, `watch` and `watch_ref` will only trigger a render on the component if the observed value has changed.
+Subscriptions done to the store with `map`, `map_ref`, `watch` and `watch_ref` will only trigger a re-render if the observed value has changed.
 ### Reference VS Ownership
 Instead of propagating clone/copy of the application state throughout components, references are used.
 
