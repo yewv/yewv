@@ -86,8 +86,8 @@ where
     ///     html!{ { value } }
     /// }
     /// ```
-    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M> {
-        let state = Ref::map(self.store.state_ref(), &map);
+    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&T) -> &M + 'static) -> Ref<M> {
+        let state = Ref::map(self.store.state_ref(), |s| map(s));
         self.watch_ref(map);
         state
     }
@@ -110,9 +110,9 @@ where
     ///     html!{ { store.state().value } }
     /// }
     /// ```
-    pub fn watch_ref<W: PartialEq>(&self, watch: impl Fn(&Rc<T>) -> &W + 'static) {
+    pub fn watch_ref<W: PartialEq>(&self, watch: impl Fn(&T) -> &W + 'static) {
         use_store_sub(self.store.clone(), move |old_state, new_state| {
-            *Ref::map(old_state, &watch) != *Ref::map(new_state, &watch)
+            watch(old_state) != watch(new_state)
         });
     }
 
@@ -162,7 +162,7 @@ impl<T> Clone for StoreContext<T> {
     }
 }
 
-fn use_store_sub<T>(store: Rc<Store<T>>, sub: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static) {
+fn use_store_sub<T>(store: Rc<Store<T>>, sub: impl Fn(&T, &T) -> bool + 'static) {
     use_hook(
         || Rc::new(RefCell::new(false)),
         move |s, u| {

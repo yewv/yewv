@@ -7,7 +7,7 @@ use std::{
 pub struct Store<T> {
     previous_state: RefCell<Rc<T>>,
     state: RefCell<Rc<T>>,
-    subscriptions: RefCell<Vec<Box<dyn Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool>>>,
+    subscriptions: RefCell<Vec<Box<dyn Fn(&T, &T) -> bool>>>,
 }
 
 impl<T> Store<T> {
@@ -70,13 +70,15 @@ impl<T> Store<T> {
     ///     true // Should be the condition for unsubscription.
     /// } );
     /// ```
-    pub fn subscribe(&self, callback: impl Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool + 'static) {
+    pub fn subscribe(&self, callback: impl Fn(&T, &T) -> bool + 'static) {
         self.subscriptions.borrow_mut().push(Box::from(callback));
     }
 
     pub(crate) fn notify(&self) {
-        let mut subs = self.subscriptions.borrow_mut().split_off(0);
-        subs.retain(|s| s(self.previous_state.borrow(), self.state_ref()));
+        let mut subs = std::mem::take(&mut *self.subscriptions.borrow_mut());
+        let prev = &self.previous_state.borrow();
+        let next = &self.state_ref();
+        subs.retain(|s| s(prev, next));
         self.subscriptions.borrow_mut().append(&mut subs);
     }
 
@@ -90,12 +92,12 @@ mod tests {
     use super::*;
 
     struct TestContext<T> {
-        notified_values: Rc<RefCell<Vec<(Rc<T>, Rc<T>)>>>,
+        notified_values: Rc<RefCell<Vec<(T, T)>>>,
         is_sub_active: Rc<RefCell<bool>>,
         store: Store<T>,
     }
 
-    fn setup<T: 'static>(initial_state: T) -> TestContext<T> {
+    fn setup<T: Clone + 'static>(initial_state: T) -> TestContext<T> {
         let store = Store::new(initial_state);
         let notified_values = Rc::new(RefCell::new(vec![]));
         let is_sub_active = Rc::new(RefCell::new(true));
@@ -144,7 +146,7 @@ mod tests {
         //When
         ctx.store.set_state(1);
         //Then
-        assert_eq!(*ctx.notified_values.borrow(), &[(Rc::new(0), Rc::new(1))]);
+        assert_eq!(*ctx.notified_values.borrow(), &[(0, 1)]);
     }
 
     #[test]
