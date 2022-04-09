@@ -4,11 +4,7 @@ mod store;
 
 pub use context::*;
 pub use handle::*;
-use std::{
-    any::Any,
-    cell::{Ref, RefCell},
-    rc::Rc,
-};
+use std::{any::Any, cell::RefCell, rc::Rc};
 pub use store::*;
 use yew::{hook, html::AnyScope, use_context, Hook, HookContext};
 
@@ -98,7 +94,7 @@ fn use_store_subscription<'a, T: 'static>(
                             }
                         }
                         for sub in subs.ref_subscriptions.iter() {
-                            if sub(Ref::clone(&prev), Ref::clone(&next)) {
+                            if sub(prev, next) {
                                 (r)();
                                 return true;
                             }

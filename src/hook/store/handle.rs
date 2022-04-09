@@ -9,7 +9,7 @@ use std::{
 pub(crate) struct Subscriptions<T> {
     pub(crate) states: Vec<Rc<dyn Any>>,
     pub(crate) subscriptions: Vec<Box<dyn (Fn(Rc<dyn Any>, &T) -> Rc<dyn Any>)>>,
-    pub(crate) ref_subscriptions: Vec<Box<dyn (Fn(Ref<Rc<T>>, Ref<Rc<T>>) -> bool)>>,
+    pub(crate) ref_subscriptions: Vec<Box<dyn (Fn(&T, &T) -> bool)>>,
 }
 
 /// Handle exposing custom hooks for the store.
@@ -90,14 +90,12 @@ impl<T: 'static> UseStoreHandle<T> {
     ///     html!{ { value } }
     /// }
     /// ```
-    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&Rc<T>) -> &M + 'static) -> Ref<M> {
-        let value = Ref::map(self.state_ref(), &map);
+    pub fn map_ref<'a, M: PartialEq + 'a>(&self, map: impl Fn(&T) -> &M + 'static) -> Ref<M> {
+        let value = Ref::map(self.state_ref(), |s| map(s));
         self.subscriptions
             .borrow_mut()
             .ref_subscriptions
-            .push(Box::new(move |prev, next| {
-                *Ref::map(prev, &map) != *Ref::map(next, &map)
-            }));
+            .push(Box::new(move |prev, next| map(prev) != map(next)));
         value
     }
 
@@ -119,13 +117,11 @@ impl<T: 'static> UseStoreHandle<T> {
     ///     html!{ { store.state().value } }
     /// }
     /// ```
-    pub fn watch_ref<W: PartialEq>(&self, watch: impl Fn(&Rc<T>) -> &W + 'static) {
+    pub fn watch_ref<W: PartialEq>(&self, watch: impl Fn(&T) -> &W + 'static) {
         self.subscriptions
             .borrow_mut()
             .ref_subscriptions
-            .push(Box::new(move |prev, next| {
-                *Ref::map(prev, &watch) != *Ref::map(next, &watch)
-            }));
+            .push(Box::new(move |prev, next| watch(prev) != watch(next)));
     }
 
     /// Subscribe to a specific store value.
