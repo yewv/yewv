@@ -8,14 +8,14 @@ If you wish to use a store alongside Yew fonction components, this library is ma
 Add the following dependency to your `Cargo.toml`.
 ```toml
 [dependencies]
-yewv = "0.3"
+yewv = "0.2"
 ```
 ## Usage
 The following need to be respected while using this library:
 1. Only works with Yew function components.
 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
-4. As opposed to `map_ref|watch_ref`, `map|watch` are hooks and are therefore constrained to certain rules:
+4. `map`, `map_ref`, `watch` and `watch_ref` are hooks and are therefore constrained to certain rules:
     - Should only be called inside Yew function components.
     - Should not be called inside loops, conditions or nested functions.
 ### Simple app with store
