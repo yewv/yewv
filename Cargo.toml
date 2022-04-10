@@ -2,8 +2,8 @@
 name = "yewv"
 version = "0.2.1"
 edition = "2021"
-repository = "https://github.com/yewv/yewv"
-homepage = "https://github.com/yewv/yewv"
+repository = "https://github.com/yewv/yewv/tree/v0.2"
+homepage = "https://github.com/yewv/yewv/tree/v0.2"
 documentation = "https://docs.rs/yewv/0.2/yewv/"
 license = "MIT"
 keywords = ["yew", "state", "store"]
