@@ -28,8 +28,8 @@ struct AppState {
     count: i32,
 }
 
-#[function_component]
-fn App() -> Html {
+#[function_component(App)]
+fn app() -> Html {
     let store = StoreContext::new(AppState { count: 0 });
     html! {
         <ContextProvider<StoreContext<AppState>> context={store}>
@@ -39,8 +39,8 @@ fn App() -> Html {
     }
 }
 
-#[function_component]
-fn Counter() -> Html {
+#[function_component(Counter)]
+fn counter() -> Html {
     let store = use_store::<AppState>();
     let count = store.map_ref(|state| &state.count);
     let onclick = {
@@ -58,7 +58,7 @@ fn Counter() -> Html {
 }
 
 fn main() {
-    yew::Renderer::<App>::new().render();
+    yew::start_app::<App>();
 }
 ```
 
@@ -85,8 +85,8 @@ impl AppService {
     }
 }
 
-#[function_component]
-fn App() -> Html {
+#[function_component(App)]
+fn app() -> Html {
     let store = StoreContext::new(AppState { count: 0 });
     let service = ServiceContext::new(AppService {
         store: store.clone(),
@@ -101,8 +101,8 @@ fn App() -> Html {
     }
 }
 
-#[function_component]
-fn Counter() -> Html {
+#[function_component(Counter)]
+fn counter() -> Html {
     let service = use_service::<AppService>();
     let store = use_store::<AppState>();
 
@@ -115,7 +115,7 @@ fn Counter() -> Html {
 }
 
 fn main() {
-    yew::Renderer::<App>::new().render();
+    yew::start_app::<App>();
 }
 ```
 
