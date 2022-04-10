@@ -15,7 +15,7 @@ The following need to be respected while using this library:
 1. Only works with Yew function components.
 2. Store and service contexts must be registered in a **parent** or **root** component with `ContextProvider`.
 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
-4. As opposed to `map_ref`, `watch` and `watch_ref`, `map` is a hook and is therefore constrained to certain rules:
+4. As opposed to `map_ref|watch_ref`, `map|watch` are hooks and are therefore constrained to certain rules:
     - Should only be called inside Yew function components.
     - Should not be called inside loops, conditions or nested functions.
 ### Simple app with store
@@ -120,8 +120,8 @@ fn main() {
 ```
 
 ### map vs map_ref & watch vs watch_ref
-If you only wish to reference a value owned by the store, you should use `map_ref|watch_ref`.
-As opposed to `map|watch`, `map_ref|watch_ref` doesn't take ownership of the referenced value.
+If you only wish to reference a value owned by the store, you should use `map_ref` or `watch_ref`.
+As opposed to `map|watch`, `map_ref|watch_ref` don't take ownership of the referenced value.
 It is usually preferable to use `map_ref|watch_ref` over `map|watch` when possible.
 However, it is not always possible to use `map_ref|watch_ref`. For instance, if the value you wish to access is not owned by the store state, you will need to use `map|watch`:
 ```rust

@@ -20,7 +20,7 @@ pub struct UseStoreHandle<T: 'static> {
 
 impl<T: 'static> UseStoreHandle<T> {
     /// (Hook) Subscribe to the store and return the value mapped.
-    /// As opposed to `map_ref`, `watch` and `watch_ref`, `map` is a hook and is therefore constrained to certain rules:
+    /// As opposed to `map_ref`, `map` is a hook and is therefore constrained to certain rules:
     /// - Should only be called inside Yew function components.
     /// - Should not be called inside loops, conditions or nested functions.
     ///
@@ -124,7 +124,11 @@ impl<T: 'static> UseStoreHandle<T> {
             .push(Box::new(move |prev, next| watch(prev) != watch(next)));
     }
 
-    /// Subscribe to a specific store value.
+    /// (Hook) Subscribe to a specific store value.
+    /// As opposed to `watch_ref`, `watch` is a hook and is therefore constrained to certain rules:
+    /// - Should only be called inside Yew function components.
+    /// - Should not be called inside loops, conditions or nested functions.
+    ///
     /// A change to the observed value will re-render the component.
     /// ```rust
     /// use yew::prelude::*;
