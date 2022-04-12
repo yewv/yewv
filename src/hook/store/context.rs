@@ -1,7 +1,7 @@
 use super::Store;
 use std::{ops::Deref, rc::Rc};
 
-/// Context which holds a reference to the store.
+/// Context holding a reference to the store.
 pub struct StoreContext<T> {
     pub(crate) store: Rc<super::Store<T>>,
 }
@@ -13,6 +13,7 @@ impl<T> PartialEq for StoreContext<T> {
 }
 
 impl<T> StoreContext<T> {
+    /// Creates a new `StoreContext` with the given `initial_state`.
     pub fn new(initial_state: T) -> Self {
         Self {
             store: Rc::new(Store::new(initial_state)),
