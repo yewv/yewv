@@ -16,7 +16,7 @@
 //! 3. Store and service need to be used in a **child** component with `use_store`/`use_service`.
 //! 4. As opposed to `map_ref` & `watch_ref`, `map` & `watch` are hooks and are therefore constrained to certain rules:
 //!     - Should only be called inside Yew function components.
-//!     - Should not be called inside loops, conditions or nested functions.
+//!     - Should not be called inside loops, conditions or callbacks.
 //! ## Simple app with store
 //! ```rust
 //! use yew::prelude::*;

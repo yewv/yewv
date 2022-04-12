@@ -55,15 +55,15 @@ pub fn use_store<T>() -> handle::UseStoreHandle<T> {
                             let mut require_render = false;
                             {
                                 let mut subs = subs.borrow_mut();
-                                if !subs.subscriptions.is_empty() {
-                                    let mut next_states = vec![];
+                                if subs.subscriptions.len() > 0 {
+                                    let mut next_states = std::mem::take(&mut subs.states);
                                     for (i, sub) in subs.subscriptions.iter().enumerate() {
-                                        let state = subs.states.get(i).expect(
+                                        let state = next_states.get_mut(i).expect(
                                             "Store subscription has no corresponding state.",
                                         );
                                         let next_state = sub(state.clone(), &next);
                                         require_render = !Rc::ptr_eq(&state, &next_state);
-                                        next_states.push(next_state);
+                                        *state = next_state;
                                     }
                                     subs.states = next_states;
                                 }

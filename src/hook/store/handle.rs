@@ -149,13 +149,13 @@ impl<T: 'static> UseStoreHandle<T> {
     pub fn watch<W: PartialEq + 'static>(&self, watch: impl Fn(&T) -> W + 'static) {
         let mut subs = self.subscriptions.borrow_mut();
         if subs.states.len() == subs.subscriptions.len() {
-            subs.states.push(Rc::new(watch(&self.state_ref())))
+            subs.states.push(Rc::new(watch(&self.state_ref())));
         }
         subs.subscriptions.push(Box::new(move |prev, next| {
             let next = watch(next);
             let current = prev
                 .downcast::<W>()
-                .expect("Store hooks were called in a different order");
+                .expect("Store watch was called in a different order");
             if next.ne(&current) {
                 return Rc::new(next);
             }
