@@ -134,7 +134,7 @@
 //! ## Custom hooks
 //! The store utilizes highly optimized custom hooks for better performance and memory efficiency.
 //! ## Renders only when and where needed
-//! Subscriptions done to the store with `map`, `map_ref` and `watch` will only trigger a render on the component if the observed value has changed.
+//! Subscriptions done to the store with `map`, `map_ref`, `watch` and `watch_ref` will only trigger a render on the component if the observed value has changed.
 //! ## Reference VS Ownership
 //! Instead of propagating clone/copy of the application state throughout components, references are used.
 //!
