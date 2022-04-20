@@ -3,10 +3,10 @@ use std::time::Duration;
 
 use gloo::timers::future::sleep;
 pub use store::*;
-use yew::IntoComponent;
+use yew::BaseComponent;
 
-pub async fn render_with_props<C: IntoComponent + 'static>(
-    props: <C as IntoComponent>::Properties,
+pub async fn render_with_props<C: BaseComponent + 'static>(
+    props: <C as BaseComponent>::Properties,
 ) {
     yew::Renderer::<C>::with_root_and_props(
         gloo_utils::document().get_element_by_id("output").unwrap(),
